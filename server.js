@@ -5,18 +5,18 @@ const app = express();
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'movies_database',
+    database: 'cliente_db',
     password: 'root',
     port: 5432,
 });
 
 app.use(express.json());
 
-app.post('/new_movies', async (req, res) => {
+app.post('/novo_cliente', async (req, res) => {
     try{
-        const {movie_id, name, genre, director} = req.body;
-        const query = 'INSERT INTO movies (movies_id, name, genre, director) VALUES($1, $2, $3, $4) RETURNING *';
-        const values = [movie_id, name, genre, director];
+        const {nome, nascimento, cpf, endereco, email} = req.body;
+        const query = 'INSERT INTO clientes (nome, nascimento, cpf, endereco, email) VALUES($1, $2, $3, $4, $5) RETURNING *';
+        const values = [nome, nascimento, cpf, endereco, email];
 
         const result = await pool.query(query, values);
         res.json(result.rows[0]);        
@@ -26,11 +26,11 @@ app.post('/new_movies', async (req, res) => {
     }
 });
 
-app.get('/movies/:name', async (req, res) => {
+app.get('/clientes/:cpf', async (req, res) => {
     try{
-        const { name } = req.params;
-        const query = 'SELECT * FROM movies WHERE name = $1';
-        const result = await pool.query(query, [name]);
+        const { cpf } = req.params;
+        const query = 'SELECT * FROM clientes WHERE cpf = $1';
+        const result = await pool.query(query, [cpf]);
 
         if (result.rows.length === 0){
             res.status(404).send('Registro não encontrado');
@@ -43,12 +43,12 @@ app.get('/movies/:name', async (req, res) => {
     }
 });
 
-app.put('/movies/:name', async (req, res) => {
+app.put('/clientes/:cpf', async (req, res) => {
     try{
-        const { name } = req.params;
-        const { genre, director } = req.body;
-        const query = 'UPDATE movies SET genre = $1, director = $2 WHERE name = $3 RETURNING *';
-        const values = [genre, director, name];
+        const { cpf } = req.params;
+        const { nome, nascimento, endereco, email} = req.body;
+        const query = 'UPDATE clientes SET nome = $1, nascimento = $2, endereco = $3, email = $4 WHERE cpf = $5 RETURNING *';
+        const values = [nome, nascimento, endereco, email, cpf];
 
         const result = await pool.query(query, values);
 
@@ -63,11 +63,11 @@ app.put('/movies/:name', async (req, res) => {
     }
 });
 
-app.delete('/movies/:name', async (req, res) => {
+app.delete('/clientes/:cpf', async (req, res) => {
     try{
-        const { name } = req.params;
-        const query = 'DELETE FROM movies WHERE name = $1';
-        await pool.query(query, [name]);
+        const { cpf } = req.params;
+        const query = 'DELETE FROM clientes WHERE cpf = $1';
+        await pool.query(query, [cpf]);
         res.sendStatus(204);
     }catch(err){
         console.error(err);
